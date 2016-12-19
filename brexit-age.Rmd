@@ -1,0 +1,237 @@
+---
+title: "brexit by age"
+author: "Charles Lang"
+date: "July 1, 2016"
+output: html_document
+---
+
+```{r}
+#Generations are: greatest generation = 1901 - 1926, silent generation = 1927 - 1945, baby boomers = 1946 - 1964, gen X = 1965 - 1980, gen Y = 1981 - 1993, child = 1994 - 2011
+
+#Define function to convert commas in thousands
+AGE <- read.csv("age.data.2011.csv", header = TRUE, as.is = T)
+
+VOTE <- read.csv("EU-referendum-result-data.csv", header = TRUE)
+
+V1 <- data.frame(VOTE$Area_Code, VOTE$Valid_Votes, VOTE$Remain, VOTE$Leave)
+names(V1) <- c("Area.code", "total.votes", "remain", "leave")
+
+#Create generational brackets
+AGE <- dplyr::mutate(AGE, greats = AGE$X85._.89 + AGE$X90._.94 + AGE$X95._.99 + AGE$X100.and.over)
+AGE <- dplyr::mutate(AGE, silent = AGE$X66 + AGE$X67 + AGE$X68 + AGE$X69 + AGE$X70._.74 + AGE$X75._.79 + AGE$X80._.84)
+AGE <- dplyr::mutate(AGE, boomers = AGE$X47 + AGE$X48 + AGE$X49 + AGE$X50._.54 + AGE$X55._.59 + AGE$X60._.64 + AGE$X65)
+AGE <- dplyr::mutate(AGE, genX = AGE$X31 + AGE$X32 + AGE$X33 + AGE$X34 + AGE$X35._.39 + AGE$X40._.44 + AGE$X45 + AGE$X46)
+AGE <- dplyr::mutate(AGE, genY = AGE$X18 + AGE$X19 + AGE$X20._.24 + AGE$X25._.29 + AGE$X30)
+AGE <- dplyr::mutate(AGE, child = AGE$X0._.4 + AGE$X5._.9 + AGE$X10._.14 + AGE$X15 + AGE$X16 + AGE$X17)                       
+
+AGE$per.child <- AGE$child/AGE$All.ages
+AGE$per.boom <- AGE$boomer/AGE$All.ages
+AGE$per.great <- AGE$greats/AGE$All.ages
+AGE$per.silent <- AGE$silent/AGE$All.ages
+AGE$per.X <- AGE$genX/AGE$All.ages
+AGE$per.Y <- AGE$genY/AGE$All.ages
+
+
+MERGE <- merge(AGE, V1)
+
+MERGE$per.leave <- MERGE$leave/MERGE$total.votes
+MERGE$per.remain <- MERGE$remain/MERGE$total.votes
+
+#Correlations per generation
+plot(MERGE$per.leave ~ MERGE$per.Y)
+cor.test(MERGE$per.leave, MERGE$per.Y)
+
+plot(MERGE$per.leave ~ MERGE$per.X)
+cor.test(MERGE$per.leave, MERGE$per.X)
+
+plot(MERGE$per.leave~ MERGE$per.boom)
+cor.test(MERGE$per.leave, MERGE$per.boom)
+
+plot(MERGE$per.leave ~ MERGE$silent)
+cor.test(MERGE$per.leave, MERGE$per.silent)
+
+plot(MERGE$per.leave ~ MERGE$per.great)
+cor.test(MERGE$per.leave, MERGE$per.great)
+
+#Plot correlations
+x <- c("Gen Y", "Gen X", "Boomer", "Silent", "Great")
+y <- c(-0.34, -0.44)
+
+
+```
+#Calculate percentage age for each electorate
+```{r}
+MERGE$per0.4 <- MERGE$X0._.4/MERGE$All.ages
+MERGE$per5.9 <- MERGE$X5._.9/MERGE$All.ages
+MERGE$per10.14 <- MERGE$X10._.14/MERGE$All.ages
+MERGE$per15.19 <- MERGE$X15._.19/MERGE$All.ages
+MERGE$per20.24 <- MERGE$X20._.24/MERGE$All.ages
+MERGE$per25.29 <- MERGE$X25._.29/MERGE$All.ages
+MERGE$per30.34 <- MERGE$X30._.34/MERGE$All.ages
+MERGE$per35.39 <- MERGE$X35._.39/MERGE$All.ages
+MERGE$per40.44 <- MERGE$X40._.44/MERGE$All.ages
+MERGE$per45.49 <- MERGE$X45._.49/MERGE$All.ages
+MERGE$per50.54 <- MERGE$X50._.54/MERGE$All.ages
+MERGE$per55.59 <- MERGE$X55._.59/MERGE$All.ages
+MERGE$per60.64 <- MERGE$X60._.64/MERGE$All.ages
+MERGE$per65.69 <- MERGE$X65._.69/MERGE$All.ages
+MERGE$per70.74 <- MERGE$X70._.74/MERGE$All.ages
+MERGE$per75.79 <- MERGE$X75._.79/MERGE$All.ages
+MERGE$per80.84 <- MERGE$X80._.84/MERGE$All.ages
+MERGE$per85.89 <- MERGE$X85._.89/MERGE$All.ages
+MERGE$per90.94 <- MERGE$X90._.94/MERGE$All.ages
+MERGE$per95.99 <- MERGE$X95._.99/MERGE$All.ages
+MERGE$per100 <- MERGE$X100.and.over/MERGE$All.ages
+
+COR <- data.frame(MERGE$Area.code, MERGE$per.leave, MERGE$per.remain, MERGE$per0.4, MERGE$per5.9, MERGE$per10.14, MERGE$per15.19, MERGE$per20.24, MERGE$per25.29, MERGE$per30.34, MERGE$per35.39, MERGE$per40.44, MERGE$per45.49, MERGE$per50.54, MERGE$per55.59, MERGE$per60.64, MERGE$per65.69, MERGE$per70.74, MERGE$per75.79, MERGE$per80.84, MERGE$per85.89, MERGE$per90.94, MERGE$per95.99, MERGE$per100)
+
+c1 <- cor.test(MERGE$per.leave, MERGE$per0.4)
+c2 <- cor.test(MERGE$per.leave, MERGE$per5.9)
+c3 <- cor.test(MERGE$per.leave, MERGE$per10.14)
+c4 <- cor.test(MERGE$per.leave, MERGE$per15.19)
+c5 <- cor.test(MERGE$per.leave, MERGE$per20.24)
+c6 <- cor.test(MERGE$per.leave, MERGE$per25.29)
+c7 <- cor.test(MERGE$per.leave, MERGE$per30.34)
+c8 <- cor.test(MERGE$per.leave, MERGE$per35.39)
+c9 <- cor.test(MERGE$per.leave, MERGE$per40.44)
+c10 <- cor.test(MERGE$per.leave, MERGE$per45.49)
+c11 <- cor.test(MERGE$per.leave, MERGE$per50.54)
+c12 <- cor.test(MERGE$per.leave, MERGE$per55.59)
+c13 <- cor.test(MERGE$per.leave, MERGE$per60.64)
+c14 <- cor.test(MERGE$per.leave, MERGE$per65.69)
+c15 <- cor.test(MERGE$per.leave, MERGE$per70.74)
+c16 <- cor.test(MERGE$per.leave, MERGE$per75.79)
+c17 <- cor.test(MERGE$per.leave, MERGE$per80.84)
+c18 <- cor.test(MERGE$per.leave, MERGE$per85.89)
+c19 <- cor.test(MERGE$per.leave, MERGE$per90.94)
+c20 <- cor.test(MERGE$per.leave, MERGE$per95.99)
+c21 <- cor.test(MERGE$per.leave, MERGE$per100)
+
+c1 <- cor.test(MERGE$per.remain, MERGE$per0.4)
+c2 <- cor.test(MERGE$per.remain, MERGE$per5.9)
+c3 <- cor.test(MERGE$per.remain, MERGE$per10.14)
+c4 <- cor.test(MERGE$per.remain, MERGE$per15.19)
+c5 <- cor.test(MERGE$per.remain, MERGE$per20.24)
+c6 <- cor.test(MERGE$per.remain, MERGE$per25.29)
+c7 <- cor.test(MERGE$per.remain, MERGE$per30.34)
+c8 <- cor.test(MERGE$per.remain, MERGE$per35.39)
+c9 <- cor.test(MERGE$per.remain, MERGE$per40.44)
+c10 <- cor.test(MERGE$per.remain, MERGE$per45.49)
+c11 <- cor.test(MERGE$per.remain, MERGE$per50.54)
+c12 <- cor.test(MERGE$per.remain, MERGE$per55.59)
+c13 <- cor.test(MERGE$per.remain, MERGE$per60.64)
+c14 <- cor.test(MERGE$per.remain, MERGE$per65.69)
+c15 <- cor.test(MERGE$per.remain, MERGE$per70.74)
+c16 <- cor.test(MERGE$per.remain, MERGE$per75.79)
+c17 <- cor.test(MERGE$per.remain, MERGE$per80.84)
+c18 <- cor.test(MERGE$per.remain, MERGE$per85.89)
+c19 <- cor.test(MERGE$per.remain, MERGE$per90.94)
+c20 <- cor.test(MERGE$per.remain, MERGE$per95.99)
+c21 <- cor.test(MERGE$per.remain, MERGE$per100)
+
+c  <- c(c1$estimate, c2$estimate, c3$estimate, c4$estimate, c5$estimate, c6$estimate, c7$estimate, c8$estimate, c9$estimate, c10$estimate, c11$estimate, c12$estimate, c13$estimate, c14$estimate, c15$estimate, c16$estimate, c17$estimate, c18$estimate, c19$estimate, c20$estimate, c21$estimate)
+
+b <- seq(1,21,1)
+
+COR2 <- data.frame(c,b)
+
+a <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-94", "95-99", "100+")
+
+a <- factor(a, levels=c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70-74", "75-79", "80-84", "85-89", "90-94", "95-99", "100+"), ordered=TRUE)
+
+d <- c(mean(MERGE$per0.4), mean(MERGE$per5.9), mean(MERGE$per10.14), mean(MERGE$per15.19), mean(MERGE$per20.24), mean(MERGE$per25.29), mean(MERGE$per30.34), mean(MERGE$per35.39), mean(MERGE$per40.44), mean(MERGE$per45.49), mean(MERGE$per50.54), mean(MERGE$per55.59), mean(MERGE$per60.64), mean(MERGE$per65.69), mean(MERGE$per70.74), mean(MERGE$per75.79), mean(MERGE$per80.84), mean(MERGE$per85.89), mean(MERGE$per90.94), mean(MERGE$per95.99), mean(MERGE$per100))
+
+e <- c(median(MERGE$per0.4), median(MERGE$per5.9), median(MERGE$per10.14), median(MERGE$per15.19), median(MERGE$per20.24), median(MERGE$per25.29), median(MERGE$per30.34), median(MERGE$per35.39), median(MERGE$per40.44), median(MERGE$per45.49), median(MERGE$per50.54), median(MERGE$per55.59), median(MERGE$per60.64), median(MERGE$per65.69), median(MERGE$per70.74), median(MERGE$per75.79), median(MERGE$per80.84), median(MERGE$per85.89), median(MERGE$per90.94), median(MERGE$per95.99), median(MERGE$per100))
+         
+COR3 <- data.frame(c,a,d)
+
+p <- ggplot(COR3, aes(a,c))
+p + geom_point() + geom_hline(yintercept = 0, linetype = "dashed") + xlab("") + ylab("Correlation between % of Electorate for Given Age Group and % Leave Vote")
+
+COR4 <- COR3[5:21,]
+
+p <- ggplot(COR4, aes(as.factor(ordered(a)),c, size = 1.5))
+p + geom_point() + geom_hline(yintercept = 0, linetype = "dashed") + xlab("Age Group") + ylab("Correlation between %Age Group \nand %Leave across Electorates") + theme_bw() + theme(legend.position="none") + theme(axis.title.x = element_text(size=12), axis.text.x = element_text(size=10, angle=35, vjust=0.5), axis.title.y = element_text(size=12), axis.text.y = element_text(size=12))
+
+p + geom_point() + geom_line() +
+      xlab("Age Group") + ylab("Correlation between %Age Group \nand %Remain across Electorates") + 
+  theme_bw() + 
+  theme(legend.position="none") + 
+  theme(axis.title.x = element_text(size=12), axis.text.x = element_text(size=10, angle=35, vjust=0.5), axis.title.y = element_text(size=12), axis.text.y = element_text(size=12))
+
+
+```
+#Median age of electorate
+```{r}
+AGE2 <- dplyr::select(MERGE,-contains("_"))
+
+AGE3 <- AGE2[, 3:103]
+
+AGE3 <- as.data.frame(t(AGE3))
+
+AGE4 <- as.data.frame(apply(AGE3, 2, cumsum))
+
+area.seq <- as.data.frame(seq(1:373))
+names(area.seq) <- c("area")
+
+area.seq$med.age <- NA
+
+for(i in 1:nrow(area.seq)){
+    x <- area.seq$area[i]
+    area.seq$med.age[i] <- findInterval(AGE4[101,x]/2, AGE4[,x])
+ }
+
+MERGE$med.age <- area.seq$med.age
+
+coef(lm(per.leave ~ med.age, data = MERGE))
+
+scatter <- ggplot(MERGE, aes(med.age, per.leave, alpha = 0.1, size = 0.5))
+scatter + geom_point(aes()) + theme_bw() + theme(legend.position="none") + geom_abline(intercept = 0.205, slope = 0.0081, linetype = "dashed") + xlab("Median Age of Electorate") + ylab("Perecent of Electorate Voting Leave") + theme(axis.title.x = element_text(size=12), axis.text.x = element_text(size=12), axis.title.y = element_text(size=12), axis.text.y = element_text(size=12)) + ylim(0.15,0.85)
+
+```
+#Plots of each age group
+```{r}
+library(ggplot2, dplyr, tidyr)
+
+CP <- dplyr::select(MERGE, 1, 147, 149:169)
+
+CP <- tidyr::gather(CP, "age", "per.age", 3:23)
+
+p <- ggplot(CP, aes(per.leave, per.age))
+p + geom_point() + facet_wrap(~age)
+
+```
+#Age distribution
+```{r}
+
+AGE6 <- AGE3
+AGE6$age.sum <- rowSums(AGE6, na.rm = TRUE)
+AGE6$age <- seq(0, 100, 1)
+AGE6$age.shift <- AGE6$age + 5
+AGE6 <- dplyr::filter(AGE6, age.shift >= 18)
+AGE6$trough <- ifelse(AGE6$age.shift >=40 & AGE6$age.shift <= 65, 1, 0)
+
+cbPalette <- c("#999999", "#56B4E9", "#E69F00",  "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
+ggplot(AGE6, aes(age, age.sum, fill = as.factor(trough))) +
+  geom_bar(stat = "identity") + 
+  scale_fill_manual(name="Life Satisfaction",
+                         breaks=c(0,1),
+                         labels=c("Outside Trough", "Within Trough"), values=cbPalette) + 
+  ylab("Population") +
+  xlab("Age") +
+  theme_bw() +
+  theme(legend.position=c(0.80,0.80), axis.title.x = element_text(size=14), axis.text.x = element_text(size=12), axis.title.y = element_text(size=14), axis.text.y = element_text(size=12))
+
+#Calculate number of people in each band
+AGE6$bands <- ifelse(AGE6$age.shift >=40 & AGE6$age.shift <= 65, 2,
+                      ifelse(AGE6$age.shift > 65, 3, 1))
+  
+AGE7 <- AGE6 %>% group_by(bands) %>% summarise(sum(age.sum))   
+names(AGE7) <- c("band", "age.sum")
+
+ggplot(AGE7, aes(band, age.sum)) +
+  geom_bar(stat = "identity")
+
+```
+
